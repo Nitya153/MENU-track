@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#ff69b4" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Enhanced Period Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to right, #fbd3e9, #bb377d);
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      background: #ff69b4;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    main {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      max-width: 900px;
+      margin: auto;
+      padding: 1rem;
+    }
+    @media (min-width: 700px) {
+      main {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    section {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 1rem;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+    h2 {
+      color: #d63384;
+      margin-top: 0;
+    }
+    label, button {
+      display: block;
+      margin: 0.5rem 0;
+    }
+    button, label.button {
+      background-color: #ff69b4;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-block;
+      margin-top: 0.5rem;
+    }
+    button.clear-button {
+      background-color: #dc3545;
+    }
+    ul {
+      padding-left: 20px;
+      margin: 0;
+    }
+    li {
+      padding: 0.4rem 0;
+      border-bottom: 1px solid #ddd;
+    }
+    .checkbox-group label {
+      display: inline-block;
+      background-color: #ffe4ec;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      margin: 0.3rem 0.3rem 0 0;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.3s;
+      user-select: none;
+    }
+    .checkbox-group input[type="checkbox"] {
+      display: none;
+    }
+    .checkbox-group input[type="checkbox"]:checked + span,
+    .checkbox-group input[type="checkbox"]:checked + label span {
+      background-color: #ffb6c1;
+      border-color: #d63384;
+      font-weight: bold;
+    }
+    .playlist, .challenge {
+      background: #fce4ec;
+      padding: 0.5rem;
+      border-radius: 8px;
+      margin-top: 0.5rem;
+    }
+    .small-text {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    footer {
+      background-color: #ff69b4;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+      left: 0;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌺 Enhanced Period Tracker</h1>
+    <p>With Mood, Music & Wellness</p>
+  </header>
+
+  <main>
+    <!-- Add New Period & Mood + Symptoms -->
+    <section>
+      <h2>📅 Add New Period & Mood Entry</h2>
+      <form id="entryForm">
+        <label for="periodStart">Period Start Date:
+          <input type="date" id="periodStart" required />
+        </label>
+
+        <label>Symptoms:</label>
+        <div class="checkbox-group" id="symptomsGroup">
+          <label><input type="checkbox" name="symptom" value="cramps" /><span>🤕 Cramps</span></label>
+          <label><input type="checkbox" name="symptom" value="fatigue" /><span>😴 Fatigue</span></label>
+          <label><input type="checkbox" name="symptom" value="bloating" /><span>🤰 Bloating</span></label>
+          <label><input type="checkbox" name="symptom" value="headache" /><span>🤯 Headache</span></label>
+          <label><input type="checkbox" name="symptom" value="mood swings" /><span>😡 Mood Swings</span></label>
+        </div>
+
+        <p><strong>Suggestions:</strong> <span id="liveSuggestions">Select symptoms to see remedies...</span></p>
+
+        <label>Mood Tags:</label>
+        <div id="moodTags" class="checkbox-group">
+          <label><input type="checkbox" value="Irritable" /><span>😠 Irritable</span></label>
+          <label><input type="checkbox" value="Anxious" /><span>😰 Anxious</span></label>
+          <label><input type="checkbox" value="Sad" /><span>😢 Sad</span></label>
+          <label><input type="checkbox" value="Happy" /><span>😊 Happy</span></label>
+          <label><input type="checkbox" value="Calm" /><span>😌 Calm</span></label>
+        </div>
+
+        <button type="submit">Add Entry</button>
+      </form>
+      <p><strong>Advice:</strong> <span id="moodAdvice">Select mood tags to get advice</span></p>
+    </section>
+
+    <!-- Cycle Stage + Playlist -->
+    <section>
+      <h2>📈 Cycle Stage + Playlist</h2>
+      <p><strong>Current Stage:</strong> <span id="cycleStage">Unknown</span></p>
+      <div class="playlist" id="musicPlaylist">Waiting for input...</div>
+    </section>
+
+    <!-- Predictions -->
+    <section>
+      <h2>🔮 Predictions</h2>
+      <div>
+        <h3>Next Period:</h3>
+        <p id="nextPeriodPrediction">Calculating...</p>
+      </div>
+      <div>
+        <h3>Ovulation:</h3>
+        <p id="ovulationPrediction">Calculating...</p>
+      </div>
+      <div>
+        <h3>Fertile Window:</h3>
+        <p id="fertileWindowPrediction">Calculating...</p>
+      </div>
+    </section>
+
+    <!-- Period + Mood History -->
+    <section>
+      <h2>📚 Period & Mood History</h2>
+      <ul id="periodHistoryList">
+        <li>No entries yet.</li>
+      </ul>
+      <button id="clearHistoryBtn" class="clear-button">Clear All History</button>
+      <button id="exportBtn">📤 Export</button>
+      <input type="file" id="importFile" accept=".json" hidden />
+      <label for="importFile" class="button">📥 Import</label>
+    </section>
+
+    <!-- Daily Wellness Challenge -->
+    <section>
+      <h2>🎯 Daily Wellness Challenge</h2>
+      <div class="challenge" id="dailyChallenge">Loading challenge...</div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Period Tracker. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Elements
+    const entryForm = document.getElementById('entryForm');
+    const periodStartInput = document.getElementById('periodStart');
+    const periodHistoryList = document.getElementById('periodHistoryList');
+    const nextPeriodPrediction = document.getElementById('nextPeriodPrediction');
+    const ovulationPrediction = document.getElementById('ovulationPrediction');
+    const fertileWindowPrediction = document.getElementById('fertileWindowPrediction');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    const liveSuggestions = document.getElementById('liveSuggestions');
+    const moodAdvice = document.getElementById('moodAdvice');
+    const cycleStageSpan = document.getElementById('cycleStage');
+    const playlistDiv = document.getElementById('musicPlaylist');
+    const dailyChallengeDiv = document.getElementById('dailyChallenge');
+    const exportBtn = document.getElementById('exportBtn');
+    const importFile = document.getElementById('importFile');
+
+    // Data storage
+    let periodHistory = JSON.parse(localStorage.getItem('periodHistory')) || [];
+
+    // Advice for moods
+    const adviceMap = {
+      "Happy": "Keep shining! 🌞 Do something fun today.",
+      "Sad": "Treat yourself gently. A warm bath or a call to a friend can help. 💕",
+      "Anxious": "Deep breaths. Try journaling or a calming tea. 🍵",
+      "Irritable": "Space and silence might be helpful. Or music! 🎧",
+      "Calm": "You're in flow. Enjoy and recharge. 🌙"
+    };
+
+    // Music playlists per cycle stage
+    const playlists = {
+      "Menstrual": ["'Bloom' – The Paper Kites", "'Fix You' – Coldplay", "'All Too Well' – Taylor Swift"],
+      "Follicular": ["'Good as Hell' – Lizzo", "'Levitating' – Dua Lipa", "'Stronger' – Kelly Clarkson"],
+      "Ovulation": ["'Confident' – Demi Lovato", "'Run the World' – Beyoncé", "'Uptown Funk' – Bruno Mars"],
+      "Luteal": ["'Breathe Me' – Sia", "'Holocene' – Bon Iver", "'Ocean Eyes' – Billie Eilish"]
+    };
+
+    // Wellness challenges array
+    const challenges = [
+      "💧 Drink 2L of water today",
+      "🧘‍♀️ Try 5 minutes of meditation",
+      "🚶‍♀️ Take a 15-minute walk",
+      "📔 Journal your mood for 5 minutes",
+      "🍎 Eat 1 fruit and 1 veggie today"
+    ];
+
+    // Function to get selected symptoms
+    function getSelectedSymptoms() {
+      return [...document.querySelectorAll('input[name="symptom"]:checked')].map(cb => cb.value);
+    }
+
+    // Function to get selected mood tags
+    function getSelectedMoods() {
+      return [...document.querySelectorAll('#moodTags input[type="checkbox"]:checked')].map(cb => cb.value);
+    }
+
+    // Suggest remedies based on symptoms
+    function getRemedies(symptoms) {
+      let remedies = [];
+      if (symptoms.includes("cramps")) remedies.push("Use a heating pad or take ibuprofen");
+      if (symptoms.includes("fatigue")) remedies.push("Rest and drink plenty of fluids");
+      if (symptoms.includes("bloating")) remedies.push("Try light exercise and reduce salty foods");
+      if (symptoms.includes("headache")) remedies.push("Stay hydrated and try relaxation techniques");
+      if (symptoms.includes("mood swings")) remedies.push("Practice mindfulness and avoid stressors");
+      return remedies.length ? remedies.join("; ") : "No specific remedies for selected symptoms.";
+    }
+
+    // Calculate cycle stage based on last period date
+    function calculateCycleStage(lastPeriodDate) {
+      const today = new Date();
+      const startDate = new Date(lastPeriodDate);
+      const diffDays = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+
+      if (diffDays < 0) return "Unknown";
+      if (diffDays <= 5) return "Menstrual";
+      else if (diffDays <= 12) return "Follicular";
+      else if (diffDays <= 16) return "Ovulation";
+      else if (diffDays <= 28) return "Luteal";
+      else return "Unknown";
+    }
+
+    // Display music playlist based on stage
+    function displayPlaylist(stage) {
+      if (playlists[stage]) {
+        playlistDiv.innerHTML = `<strong>Recommended Playlist for ${stage} Phase:</strong><ul>` +
+          playlists[stage].map(song => `<li>${song}</li>`).join('') + `</ul>`;
+      } else {
+        playlistDiv.textContent = "No playlist available for current stage.";
+      }
+    }
+
+    // Predict next period based on last entry & cycle length (average 28 days)
+    function predictNextPeriod(history) {
+      if (history.length === 0) return "No data yet.";
+      const lastDate = new Date(history[history.length - 1].date);
+      const avgCycle = 28;
+      const predicted = new Date(lastDate);
+      predicted.setDate(predicted.getDate() + avgCycle);
+      return predicted.toLocaleDateString();
+    }
+
+    // Predict ovulation date (~14 days before next period)
+    function predictOvulation(nextPeriodStr) {
+      if (nextPeriodStr === "No data yet.") return "No data yet.";
+      const nextDate = new Date(nextPeriodStr);
+      nextDate.setDate(nextDate.getDate() - 14);
+      return nextDate.toLocaleDateString();
+    }
+
+    // Predict fertile window (~5 days before ovulation + ovulation day)
+    function predictFertileWindow(ovulationStr) {
+      if (ovulationStr === "No data yet.") return "No data yet.";
+      const ovulationDate = new Date(ovulationStr);
+      const startDate = new Date(ovulationDate);
+      startDate.setDate(startDate.getDate() - 5);
+      return `${startDate.toLocaleDateString()} - ${ovulationDate.toLocaleDateString()}`;
+    }
+
+    // Display period & mood history list
+    function displayHistory() {
+      periodHistoryList.innerHTML = '';
+      if (periodHistory.length === 0) {
+        periodHistoryList.innerHTML = '<li>No entries yet.</li>';
+        cycleStageSpan.textContent = "Unknown";
+        playlistDiv.textContent = "Waiting for input...";
+        nextPeriodPrediction.textContent = "Calculating...";
+        ovulationPrediction.textContent = "Calculating...";
+        fertileWindowPrediction.textContent = "Calculating...";
+        moodAdvice.textContent = "Select mood tags to get advice";
+        return;
+      }
+      periodHistory.slice().reverse().forEach(entry => {
+        const li = document.createElement('li');
+        const moods = entry.moodTags.length ? entry.moodTags.join(', ') : "No mood tags";
+        const symptoms = entry.symptoms.length ? entry.symptoms.join(', ') : "No symptoms";
+        li.textContent = `${entry.date} | Mood: ${moods} | Symptoms: ${symptoms}`;
+        periodHistoryList.appendChild(li);
+      });
+
+      // Update cycle stage and playlist based on last entry
+      const lastEntry = periodHistory[periodHistory.length - 1];
+      const stage = calculateCycleStage(lastEntry.date);
+      cycleStageSpan.textContent = stage;
+      displayPlaylist(stage);
+
+      // Predictions
+      const nextPeriod = predictNextPeriod(periodHistory);
+      nextPeriodPrediction.textContent = nextPeriod;
+
+      const ovulation = predictOvulation(nextPeriod);
+      ovulationPrediction.textContent = ovulation;
+
+      fertileWindowPrediction.textContent = predictFertileWindow(ovulation);
+
+      // Mood advice for last entry moods
+      if (lastEntry.moodTags.length > 0) {
+        const advices = lastEntry.moodTags.map(m => adviceMap[m]).filter(a => a);
+        moodAdvice.textContent = advices.length ? advices.join(" | ") : "No specific advice.";
+      } else {
+        moodAdvice.textContent = "Select mood tags to get advice";
+      }
+    }
+
+    // Show wellness challenge of the day (changes every day)
+    function showDailyChallenge() {
+      const dayIndex = new Date().getDate() % challenges.length;
+      dailyChallengeDiv.textContent = challenges[dayIndex];
+    }
+
+    // Form submission handler
+    entryForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const date = periodStartInput.value;
+      if (!date) {
+        alert("Please enter a date.");
+        return;
+      }
+      const symptoms = getSelectedSymptoms();
+      const moodTags = getSelectedMoods();
+
+      // Save entry
+      periodHistory.push({ date, symptoms, moodTags });
+      localStorage.setItem('periodHistory', JSON.stringify(periodHistory));
+
+      // Reset form
+      entryForm.reset();
+      liveSuggestions.textContent = "Select symptoms to see remedies...";
+      displayHistory();
+      alert('Entry added successfully!');
+    });
+
+    // Live update remedies when symptoms change
+    document.getElementById('symptomsGroup').addEventListener('change', () => {
+      const symptoms = getSelectedSymptoms();
+      liveSuggestions.textContent = getRemedies(symptoms);
+    });
+
+    // Clear history button
+    clearHistoryBtn.addEventListener('click', () => {
+      if (confirm("Are you sure you want to clear all history?")) {
+        periodHistory = [];
+        localStorage.removeItem('periodHistory');
+        displayHistory();
+      }
+    });
+
+    // Export data button
+    exportBtn.addEventListener('click', () => {
+      if (periodHistory.length === 0) {
+        alert("No data to export.");
+        return;
+      }
+      const dataStr = JSON.stringify(periodHistory, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'periodHistory.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // Import data handler
+    importFile.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const importedData = JSON.parse(e.target.result);
+          if (!Array.isArray(importedData)) throw new Error("Invalid data format");
+          // Merge imported with current (avoid duplicates)
+          importedData.forEach(entry => {
+            if (!periodHistory.some(e => e.date === entry.date)) {
+              periodHistory.push(entry);
+            }
+          });
+          localStorage.setItem('periodHistory', JSON.stringify(periodHistory));
+          displayHistory();
+          alert("Data imported successfully.");
+        } catch (err) {
+          alert("Failed to import data: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+      importFile.value = '';
+    });
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(() => console.log("✅ Service Worker Registered"))
+      .catch(err => console.error("❌ SW Registration Failed", err));
+  });
+}
+
+    // Initialization on page load
+    displayHistory();
+    showDailyChallenge();
+  </script>
+</body>
+</html>
+
